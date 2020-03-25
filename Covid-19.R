@@ -3,8 +3,8 @@ library(httr)
 library(tidyverse)
 library(cowplot)
 
-EcdcUrl <- "https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-2020-03-24.csv"
-#EcdcUrl <- paste("https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-",format(Sys.time(), "%Y-%m-%d"), ".xlsx", sep = "")
+#EcdcUrl <- "https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-2020-03-24.csv"
+EcdcUrl <- paste("https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-",format(Sys.time(), "%Y-%m-%d"), ".csv", sep = "")
 
 data <- read_csv(url(EcdcUrl),
                  col_types = cols(Cases = col_integer(),
