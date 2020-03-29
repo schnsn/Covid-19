@@ -1,77 +1,66 @@
-library(readxl)
 library(httr)
 library(tidyverse)
 library(cowplot)
+#library(directlabels)
 
-#EcdcUrl <- "https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-2020-03-24.csv"
-EcdcUrl <- paste("https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-",format(Sys.time(), "%Y-%m-%d"), ".csv", sep = "")
+GET("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", authenticate(":", ":", type="ntlm"),
+    write_disk(tf <- tempfile(fileext = ".csv")))
 
-data <- read_csv(url(EcdcUrl),
-                 col_types = cols(Cases = col_integer(),
-                 DateRep = col_date(format = "%d/%m/%Y"),
-                 Day = col_integer(), Deaths = col_integer(),
-                 Month = col_integer(), Year = col_integer()))
-
-Population <- read_csv(url("https://datahub.io/JohnSnowLabs/population-figures-by-country/r/population-figures-by-country-csv.csv"))
-
-
-
+data <- read_csv(tf,
+                 col_types = cols(cases = col_integer(),
+                 dateRep = col_date(format = "%d/%m/%Y"),
+                 day = col_integer(), deaths = col_integer(),
+                 month = col_integer(), year = col_integer()))
 
 Countries <- c("AT","DE","ES","FR","IT","UK","US")
-PopCountries <- c("AUT","DEU","ESP","FRA","ITA","GBR","USA") # WHY HAVE STANDARDS?!
-
-Population <- Population %>%
-  filter (Country_Code %in% PopCountries) %>%
-  select(Country_Code, ends_with("2016")) %>%
-  mutate(Country_Code = Countries) %>%
-  rename(GeoId = Country_Code, Population100k = Year_2016) %>%
-  mutate(Population100k = Population100k/100000)
 
 DataSelected <- data %>%
-  arrange(DateRep) %>%
-  filter (Month >= "3") %>%
-  filter (GeoId %in% Countries) %>%
-  inner_join(Population) %>%
-  group_by(GeoId) %>%
-  mutate(CumCases = cumsum(Cases)) %>%
-  mutate(CumDeaths = cumsum(Deaths)) %>%
-  mutate(Active = Cases - Deaths) %>%
+  arrange(dateRep) %>%
+  filter (month >= "3") %>%
+  filter (geoId %in% Countries) %>%
+  group_by(geoId) %>%
+  mutate(Population100k = popData2018/100000) %>%
+  mutate(CumCases = cumsum(cases)) %>%
+  mutate(CumDeaths = cumsum(deaths)) %>%
+  mutate(Active = cases - deaths) %>%
   mutate(CumActive = CumCases - CumDeaths) %>%
   mutate(Mortality_naive = CumDeaths/CumCases) %>%
   mutate(CumCasesPer100k = CumCases/Population100k) %>%
   mutate(CumDeathsPer100k = CumDeaths/Population100k)
 
-
-CasesByCountry <- ggplot(data = DataSelected, aes(x = DateRep)) +
-  geom_line(aes (y = Cases, color = GeoId)) +
-  labs(title = "Daily Cases", x = NULL, y = NULL) +
+CasesByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
+  geom_line(aes (y = cases, color = geoId)) +
+  labs(title = "Daily cases", x = NULL, y = NULL) +
   labs(colour = "Countries") +
   theme(legend.justification=c(0,1), legend.position=c(0.01,0.99),
         axis.text.x = element_blank())
 
-CumCasesByCountry <- ggplot(data = DataSelected, aes(x = DateRep)) +
-  geom_line(aes (y = CumCases, color = GeoId)) +
-  labs(title = "Cumulative Cases", x = NULL, y = NULL) +
+CumCasesByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
+  geom_line(aes (y = CumCases, color = geoId)) +
+  scale_y_log10() +
+ # geom_dl(aes(y=CumCases,label=geoId),method="top.qp") +
+  labs(title = "Cumulative cases (log)", x = NULL, y = NULL) +
   theme(legend.position = "none", axis.text.x = element_blank())
 
-CumCasesPerPop <- ggplot(data = DataSelected, aes(x = DateRep)) +
-  geom_line(aes (y = CumCasesPer100k, color = GeoId)) +
-  labs(title = "Cumulative Cases per 100k Inhabitants", x = NULL, y = NULL) +
+CumCasesPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
+  geom_line(aes (y = CumCasesPer100k, color = geoId)) +
+  labs(title = "Cumulative cases per 100k Inhabitants", x = NULL, y = NULL) +
   theme(legend.position = "none", axis.text.x = element_blank())
 
-DeathsByCountry <- ggplot(data = DataSelected, aes(x = DateRep)) +
-  geom_line(aes (y = Deaths, color = GeoId)) +
-  labs(title = "Daily Deaths", x = NULL, y = NULL) +
+DeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
+  geom_line(aes (y = deaths, color = geoId)) +
+  labs(title = "Daily deaths", x = NULL, y = NULL) +
   theme(legend.position = "none")
 
-CumDeathsByCountry <- ggplot(data = DataSelected, aes(x = DateRep)) +
-  geom_line(aes (y = CumDeaths, color = GeoId)) +
-  labs(title = "Cumulative Deaths", x = NULL, y = NULL) +
+CumDeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
+  geom_line(aes (y = CumDeaths, color = geoId)) +
+  scale_y_log10() +
+  labs(title = "Cumulative deaths (log)", x = NULL, y = NULL) +
   theme(legend.position = "none")
 
-CumDeathsPerPop <- ggplot(data = DataSelected, aes(x = DateRep)) +
-  geom_line(aes (y = CumDeathsPer100k, color = GeoId)) +
-  labs(title = "Cumulative Deaths per 100k Inhabitants", x = NULL, y = NULL) +
+CumDeathsPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
+  geom_line(aes (y = CumDeathsPer100k, color = geoId)) +
+  labs(title = "Cumulative deaths per 100k Inhabitants", x = NULL, y = NULL) +
   theme(legend.position = "none")
 
 plot_grid(CasesByCountry, CumCasesByCountry, CumCasesPerPop,
@@ -81,40 +70,40 @@ plot_grid(CasesByCountry, CumCasesByCountry, CumCasesPerPop,
 
 # Plots in log Scale:
 
-# CasesByCountry <- ggplot(data = DataSelected, aes(x = DateRep)) +
-#   geom_line(aes (y = Cases, color = GeoId)) +
+# CasesByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
+#   geom_line(aes (y = cases, color = geoId)) +
 #   scale_y_log10() +
-#   labs(title = "Daily Cases (log Scale)", x = NULL, y = NULL) +
+#   labs(title = "Daily cases (log Scale)", x = NULL, y = NULL) +
 #   theme(legend.position = "none", axis.text.x = element_blank())
 #
-# CumCasesByCountry <- ggplot(data = DataSelected, aes(x = DateRep)) +
-#   geom_line(aes (y = CumCases, color = GeoId)) +
+# CumCasesByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
+#   geom_line(aes (y = CumCases, color = geoId)) +
 #   scale_y_log10() +
-#   labs(title = "Cumulative Cases (log Scale)", x = NULL, y = NULL) +
+#   labs(title = "Cumulative cases (log Scale)", x = NULL, y = NULL) +
 #   theme(legend.position = "none", axis.text.x = element_blank())
 #
-# CumCasesPerPop <- ggplot(data = DataSelected, aes(x = DateRep)) +
-#   geom_line(aes (y = CumCasesPer100k, color = GeoId)) +
+# CumCasesPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
+#   geom_line(aes (y = CumCasesPer100k, color = geoId)) +
 #   scale_y_log10() +
-#   labs(title = "Cumulative Cases per 100k Inhabitants (log Scale)", x = NULL, y = NULL) +
+#   labs(title = "Cumulative cases per 100k Inhabitants (log Scale)", x = NULL, y = NULL) +
 #   labs(colour = "Countries", axis.text.x = element_blank())
 #
-# DeathsByCountry <- ggplot(data = DataSelected, aes(x = DateRep)) +
-#   geom_line(aes (y = Deaths, color = GeoId)) +
+# DeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
+#   geom_line(aes (y = deaths, color = geoId)) +
 #   scale_y_log10() +
-#   labs(title = "Daily Deaths (log Scale)", x = NULL, y = NULL) +
+#   labs(title = "Daily deaths (log Scale)", x = NULL, y = NULL) +
 #   theme(legend.position = "none")
 #
-# CumDeathsByCountry <- ggplot(data = DataSelected, aes(x = DateRep)) +
-#   geom_line(aes (y = CumDeaths, color = GeoId)) +
+# CumDeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
+#   geom_line(aes (y = CumDeaths, color = geoId)) +
 #   scale_y_log10() +
-#   labs(title = "Cumulative Deaths (log Scale)", x = NULL, y = NULL) +
+#   labs(title = "Cumulative deaths (log Scale)", x = NULL, y = NULL) +
 #   theme(legend.position = "none")
 #
-# CumDeathsPerPop <- ggplot(data = DataSelected, aes(x = DateRep)) +
-#   geom_line(aes (y = CumDeathsPer100k, color = GeoId)) +
+# CumDeathsPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
+#   geom_line(aes (y = CumDeathsPer100k, color = geoId)) +
 #   scale_y_log10() +
-#   labs(title = "Cumulative Deaths per 100k Inhabitants (log Scale)", x = NULL, y = NULL) +
+#   labs(title = "Cumulative deaths per 100k Inhabitants (log Scale)", x = NULL, y = NULL) +
 #   labs(colour = "Countries", caption = "(based on data from www.ecdc.europa.eu)")
 #
 # plot_grid(CasesByCountry, CumCasesByCountry, CumCasesPerPop,
