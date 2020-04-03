@@ -8,9 +8,9 @@ GET("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", authenticate
 
 data <- read_csv(tf,
                  col_types = cols(cases = col_integer(),
-                 dateRep = col_date(format = "%d/%m/%Y"),
-                 day = col_integer(), deaths = col_integer(),
-                 month = col_integer(), year = col_integer()))
+                                  dateRep = col_date(format = "%d/%m/%Y"),
+                                  day = col_integer(), deaths = col_integer(),
+                                  month = col_integer(), year = col_integer()))
 
 Countries <- c("AT","DE","ES","FR","IT","UK","US")
 
@@ -40,53 +40,38 @@ CasesByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
 CumCasesByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumCases, color = geoId)) +
   scale_y_log10() +
-<<<<<<< HEAD
   scale_x_date(date_breaks = "5 days",
                date_minor_breaks = "1 days") +
-=======
- # geom_dl(aes(y=CumCases,label=geoId),method="top.qp") +
->>>>>>> 1b1c016... GET changed to ECDC CSV
+  # geom_dl(aes(y=CumCases,label=geoId),method="top.qp") +
   labs(title = "Cumulative cases (log)", x = NULL, y = NULL) +
   theme(legend.position = "none", axis.text.x = element_blank())
 
 CumCasesPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumCasesPer100k, color = geoId)) +
-<<<<<<< HEAD
   scale_x_date(date_breaks = "5 days",
                date_minor_breaks = "1 days") +
-=======
->>>>>>> 1b1c016... GET changed to ECDC CSV
   labs(title = "Cumulative cases per 100k Inhabitants", x = NULL, y = NULL) +
   theme(legend.position = "none", axis.text.x = element_blank())
 
 DeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = deaths, color = geoId)) +
   labs(title = "Daily deaths", x = NULL, y = NULL) +
-<<<<<<< HEAD
   scale_x_date(date_breaks = "5 days",
                date_minor_breaks = "1 days") +
-=======
->>>>>>> 1b1c016... GET changed to ECDC CSV
   theme(legend.position = "none")
 
 CumDeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumDeaths, color = geoId)) +
   scale_y_log10() +
-<<<<<<< HEAD
   scale_x_date(date_breaks = "5 days",
                date_minor_breaks = "1 days") +
-=======
->>>>>>> 1b1c016... GET changed to ECDC CSV
   labs(title = "Cumulative deaths (log)", x = NULL, y = NULL) +
   theme(legend.position = "none")
 
 CumDeathsPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumDeathsPer100k, color = geoId)) +
-<<<<<<< HEAD
   scale_x_date(date_breaks = "5 days",
                date_minor_breaks = "1 days") +
-=======
->>>>>>> 1b1c016... GET changed to ECDC CSV
   labs(title = "Cumulative deaths per 100k Inhabitants", x = NULL, y = NULL) +
   theme(legend.position = "none")
 
