@@ -32,34 +32,45 @@ CasesByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = cases, color = geoId)) +
   labs(title = "Daily cases", x = NULL, y = NULL) +
   labs(colour = "Countries") +
+  scale_x_date(date_breaks = "5 days",
+               date_minor_breaks = "1 days") +
   theme(legend.justification=c(0,1), legend.position=c(0.01,0.99),
         axis.text.x = element_blank())
 
 CumCasesByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumCases, color = geoId)) +
   scale_y_log10() +
- # geom_dl(aes(y=CumCases,label=geoId),method="top.qp") +
+  scale_x_date(date_breaks = "5 days",
+               date_minor_breaks = "1 days") +
   labs(title = "Cumulative cases (log)", x = NULL, y = NULL) +
   theme(legend.position = "none", axis.text.x = element_blank())
 
 CumCasesPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumCasesPer100k, color = geoId)) +
+  scale_x_date(date_breaks = "5 days",
+               date_minor_breaks = "1 days") +
   labs(title = "Cumulative cases per 100k Inhabitants", x = NULL, y = NULL) +
   theme(legend.position = "none", axis.text.x = element_blank())
 
 DeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = deaths, color = geoId)) +
   labs(title = "Daily deaths", x = NULL, y = NULL) +
+  scale_x_date(date_breaks = "5 days",
+               date_minor_breaks = "1 days") +
   theme(legend.position = "none")
 
 CumDeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumDeaths, color = geoId)) +
   scale_y_log10() +
+  scale_x_date(date_breaks = "5 days",
+               date_minor_breaks = "1 days") +
   labs(title = "Cumulative deaths (log)", x = NULL, y = NULL) +
   theme(legend.position = "none")
 
 CumDeathsPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumDeathsPer100k, color = geoId)) +
+  scale_x_date(date_breaks = "5 days",
+               date_minor_breaks = "1 days") +
   labs(title = "Cumulative deaths per 100k Inhabitants", x = NULL, y = NULL) +
   theme(legend.position = "none")
 
