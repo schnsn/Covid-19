@@ -56,21 +56,24 @@ CumCasesPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
 DeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = deaths, color = geoId)) +
   labs(title = "Daily deaths", x = NULL, y = NULL) +
-  scale_x_date(date_breaks = "5 days",
+  scale_x_date(date_labels = "%b %d",
+               date_breaks = "5 days",
                date_minor_breaks = "1 days") +
   theme(legend.position = "none")
 
 CumDeathsByCountry <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumDeaths, color = geoId)) +
   scale_y_log10() +
-  scale_x_date(date_breaks = "5 days",
+  scale_x_date(date_labels = "%b %d",
+               date_breaks = "5 days",
                date_minor_breaks = "1 days") +
   labs(title = "Cumulative deaths (log)", x = NULL, y = NULL) +
   theme(legend.position = "none")
 
 CumDeathsPerPop <- ggplot(data = DataSelected, aes(x = dateRep)) +
   geom_line(aes (y = CumDeathsPer100k, color = geoId)) +
-  scale_x_date(date_breaks = "5 days",
+  scale_x_date(date_labels = "%b %d",
+               date_breaks = "5 days",
                date_minor_breaks = "1 days") +
   labs(title = "Cumulative deaths per 100k Inhabitants", x = NULL, y = NULL) +
   theme(legend.position = "none")
